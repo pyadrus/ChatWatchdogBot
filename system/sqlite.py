@@ -21,3 +21,12 @@ async def reading_from_the_database_of_forbidden_words():
         conn.commit()
         bad_words = cursor.execute('SELECT word FROM bad_words').fetchall()
     return bad_words
+
+
+async def delete_bad_word(word):
+    # создаем подключение к базе данных
+    with sqlite3.connect('bad_words.db') as conn:
+        cursor = conn.cursor()
+        # удаляем слово из таблицы
+        cursor.execute('DELETE FROM bad_words WHERE word = ?', (word,))
+        conn.commit()
