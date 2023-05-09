@@ -8,7 +8,8 @@ from aiogram.types import ParseMode
 from system.dispatcher import dp, bot, AddAndDelBadWords
 from system.dispatcher import time_del
 from system.read_sqlite import reading_from_the_database_of_forbidden_check_word, reading_data_from_the_database, \
-    reading_bad_words_from_the_database, reading_from_the_database_of_forbidden_words
+    reading_bad_words_from_the_database, reading_from_the_database_of_forbidden_words, \
+    reading_data_from_the_database_check
 from system.sqlite import delete_bad_word, recording_actions_check_word_in_the_database
 from system.sqlite import recording_actions_in_the_database
 from system.sqlite import writing_bad_words_to_the_database
@@ -23,6 +24,7 @@ info = '''
 /add_check     – 🧾 Добавить check слов.
 /get_data      – 🧾 Получить список пользователей, использующих запрещенные слова,
 /get_bad_words – 🧾 Получить список запрещенных слов.
+/get_data_check– 🧾 Получить список check слов.
 <u>@PyAdminRUS</u>   – 🔗 Связаться с разработчиком бота 🤖.
 '''
 
@@ -77,7 +79,7 @@ async def delete_bad_handler(message: types.Message):
     await AddAndDelBadWords.del_for_bad_word.set()  # Переходим в состояние ожидания плохого слова
 
 
-@dp.message_handler(commands=["get_data"])
+@dp.message_handler(commands=["get_data_bad"])
 async def get_data(message: types.Message):
     """Команда для получения данных из базы данных с помощью команды /get_data"""
     # Получаем информацию о пользователе
@@ -93,7 +95,31 @@ async def get_data(message: types.Message):
             output.write(str(row) + "\n")
         # Отправляем файл пользователю в личку
         output.seek(0)
-        await bot.send_document(message.from_user.id, types.InputFile(output, filename="data.txt"))
+        await bot.send_document(message.from_user.id, types.InputFile(output, filename="data_bad.txt"))
+        # Отправляем сообщение с результатом в личку пользователю
+        await bot.send_message(message.from_user.id, "Данные успешно отправлены вам в личку.")
+    else:
+        # Отправляем сообщение о том, что пользователь не является администратором чата
+        await message.reply("Команда доступна только администраторам чата.")
+
+
+@dp.message_handler(commands=["get_data_check"])
+async def get_data_check(message: types.Message):
+    """Команда для получения данных из базы данных с помощью команды /get_data_check"""
+    # Получаем информацию о пользователе
+    user = await bot.get_chat_member(message.chat.id, message.from_user.id)
+    # Проверяем, является ли пользователь администратором чата
+    if user.status in ("administrator", "creator"):
+        # Получаем данные из базы данных
+        data = await reading_data_from_the_database_check()
+        # Создаем файл в памяти
+        output = io.StringIO()
+        # Записываем данные в файл
+        for row in data:
+            output.write(str(row) + "\n")
+        # Отправляем файл пользователю в личку
+        output.seek(0)
+        await bot.send_document(message.from_user.id, types.InputFile(output, filename="data_check.txt"))
         # Отправляем сообщение с результатом в личку пользователю
         await bot.send_message(message.from_user.id, "Данные успешно отправлены вам в личку.")
     else:
@@ -189,3 +215,4 @@ def admin_handlers():
     dp.register_message_handler(delete_bad_handler)  # Команда /del_bad
     dp.register_message_handler(get_data)  # Команда /get_data
     dp.register_message_handler(get_bad_words)  # Команда /get_bad_words
+    dp.register_message_handler(get_data_check)  # Команда /get_data_check

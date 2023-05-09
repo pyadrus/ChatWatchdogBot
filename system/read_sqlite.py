@@ -31,7 +31,17 @@ async def reading_data_from_the_database():
     data = conn.execute("SELECT * FROM bad_word_users").fetchall()
     # Закрываем соединение с базой данных
     conn.close()
+    return data
 
+
+async def reading_data_from_the_database_check():
+    """Чтение с базы данных check слов"""
+    # Создаем соединение с базой данных
+    conn = sqlite3.connect('setting/bad_words.db')
+    # Получаем данные из базы данных
+    data = conn.execute("SELECT * FROM check_word_users").fetchall()
+    # Закрываем соединение с базой данных
+    conn.close()
     return data
 
 
