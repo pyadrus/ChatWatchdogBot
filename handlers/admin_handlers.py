@@ -7,9 +7,9 @@ from aiogram.types import ParseMode
 
 from system.dispatcher import dp, bot, AddAndDelBadWords
 from system.dispatcher import time_del
-from system.sqlite import delete_bad_word, reading_bad_words_from_the_database
-from system.sqlite import reading_data_from_the_database
-from system.sqlite import reading_from_the_database_of_forbidden_words
+from system.read_sqlite import reading_from_the_database_of_forbidden_check_word, reading_data_from_the_database, \
+    reading_bad_words_from_the_database, reading_from_the_database_of_forbidden_words
+from system.sqlite import delete_bad_word, recording_actions_check_word_in_the_database
 from system.sqlite import recording_actions_in_the_database
 from system.sqlite import writing_bad_words_to_the_database
 from system.sqlite import writing_check_words_to_the_database
@@ -54,13 +54,15 @@ async def cmd_add_bad(message: types.Message):
 @dp.message_handler(commands=['add_check'])
 async def cmd_add_check(message: types.Message):
     """Обработчик команды /add_check"""
-    # Проверяем, вызвал ли команду админ чата
-    chat_member = await bot.get_chat_member(chat_id=message.chat.id, user_id=message.from_user.id)
-    if not chat_member.is_chat_admin():
-        await message.reply('Эту команду может использовать только администратор чата.')
-        return
-    await message.answer('Введите check слово, которое нужно добавить в список check слов:')
-    await AddAndDelBadWords.waiting_for_check_word.set()  # Переходим в состояние ожидания плохого слова
+    # Получаем информацию о пользователе
+    user = await bot.get_chat_member(message.chat.id, message.from_user.id)
+    # Проверяем, является ли пользователь администратором чата
+    if user.status in ("administrator", "creator"):
+        await message.answer('Введите check слово, которое нужно добавить в список check слов:')
+        await AddAndDelBadWords.waiting_for_check_word.set()  # Переходим в состояние ожидания плохого слова
+    else:
+        # Отправляем сообщение о том, что пользователь не является администратором чата
+        await message.reply("Команда доступна только администраторам чата.")
 
 
 @dp.message_handler(commands=['del_bad'])
@@ -164,15 +166,18 @@ async def process_message(message: types.Message):
     bad_words = await reading_from_the_database_of_forbidden_words()
     for word in bad_words:
         if word[0] in message.text.lower():
+            await recording_actions_in_the_database(word[0], message)
             await message.delete()  # Удаляем сообщение от пользователя с запрещенным словом
             warning = await bot.send_message(message.chat.id, f'В вашем сообщении обнаружено запрещенное слово. '
                                                               f'Пожалуйста, не используйте его в дальнейшем.')
             await asyncio.sleep(int(time_del))  # Спим 20 секунд
             await warning.delete()  # Удаляем предупреждение от бота
-    # Записываем действия пользователя в базу данных для каждого слова в сообщении
-    words = message.text.split()
-    for word in words:
-        await recording_actions_in_the_database(word, message)
+
+    # Проверяем наличие запрещенных слов для проверки в сообщении
+    check_words = await reading_from_the_database_of_forbidden_check_word()
+    for check_word in check_words:
+        if check_word[0] in message.text.lower():
+            await recording_actions_check_word_in_the_database(check_word[0], message)
 
 
 def admin_handlers():
