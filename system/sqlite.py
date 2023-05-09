@@ -58,6 +58,16 @@ async def delete_bad_word(word):
         conn.commit()
 
 
+async def delete_check_word(word):
+    """Удаление плохих слов с базы данных"""
+    # создаем подключение к базе данных
+    with sqlite3.connect('setting/bad_words.db') as conn:
+        cursor = conn.cursor()
+        # удаляем слово из таблицы
+        cursor.execute('DELETE FROM check_word WHERE word = ?', (word,))
+        conn.commit()
+
+
 async def recording_actions_in_the_database(word, message):
     """Запись действий в базу данных запрещенных слов"""
     # Создаем соединение с базой данных
@@ -74,7 +84,7 @@ async def recording_actions_in_the_database(word, message):
     username = message.from_user.username
     full_name = message.from_user.full_name
     conn.execute("INSERT INTO bad_word_users (user_id, username, full_name, word, timestamp) VALUES (?, ?, ?, ?, ?)",
-                (user_id, username, full_name, word, datetime.now()))
+                 (user_id, username, full_name, word, datetime.now()))
     conn.commit()
     # Закрываем соединение с базой данных
     conn.close()
@@ -94,7 +104,7 @@ async def recording_actions_check_word_in_the_database(word, message):
     full_name = message.from_user.full_name
     # Записываем информацию о пользователе в базу данных
     conn.execute("INSERT INTO check_word_users (user_id, username, full_name, word, timestamp) VALUES (?, ?, ?, ?, ?)",
-                (user_id, username, full_name, word, datetime.now()))
+                 (user_id, username, full_name, word, datetime.now()))
     conn.commit()
     # Закрываем соединение с базой данных
     conn.close()
