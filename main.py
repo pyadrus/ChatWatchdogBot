@@ -4,7 +4,7 @@ from loguru import logger
 from handlers.admin_handlers import admin_handlers
 from system.dispatcher import dp
 
-logger.add("settings/log/log.log", rotation="1 MB", compression="zip")
+logger.add("setting/log/log.log", rotation="1 MB", compression="zip")
 
 
 def main():
