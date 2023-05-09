@@ -7,15 +7,21 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ParseMode
+import configparser
 
 from system.sqlite import delete_bad_word, reading_data_from_the_database, reading_bad_words_from_the_database
 from system.sqlite import reading_from_the_database_of_forbidden_words
 from system.sqlite import recording_actions_in_the_database
 from system.sqlite import writing_bad_words_to_the_database
 
-BOT_TOKEN = '6030769434:AAH6I8EolvOSpBQppNv1wtu91d1sD7GPeDs'  # Установите ваш токен Telegram
+config = configparser.ConfigParser(empty_lines_in_values=False, allow_no_value=True)
+# Считываем токен бота с файла config.ini
+config.read("setting/config.ini")
+bot_token = config.get('BOT_TOKEN', 'BOT_TOKEN')
 
-bot = Bot(token=BOT_TOKEN)  # Инициализируем бота и диспетчер
+# BOT_TOKEN = '6030769434:AAH6I8EolvOSpBQppNv1wtu91d1sD7GPeDs'  # Установите ваш токен Telegram
+
+bot = Bot(token=bot_token)  # Инициализируем бота и диспетчер
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 
@@ -33,12 +39,12 @@ async def deleting_a_bot_message(del_bot_mes):
 
 info = '''
 <b>✅ Основные команды бота:</b>
-<u>/start</u>        – 🤖 Запустить бота.
-<u>/help</u>         – 🤖 Получить информацию о работе с ботом.
-<u>/add_bad</u>      – 🧾 Добавить запрещенное слово.
-<u>/del_bad</u>      – 🧾 Удалить запрещенное слово.
-<u>/get_data</u>     – 🧾 Получить список пользователей, использующих запрещенные слова,
-<u>/get_bad_words</u>– 🧾 Получить список запрещенных слов.
+/start         – 🤖 Запустить бота.
+/help          – 🤖 Получить информацию о работе с ботом.
+/add_bad       – 🧾 Добавить запрещенное слово.
+/del_bad       – 🧾 Удалить запрещенное слово.
+/get_data      – 🧾 Получить список пользователей, использующих запрещенные слова,
+/get_bad_words – 🧾 Получить список запрещенных слов.
 <u>@PyAdminRUS</u>   – 🔗 Связаться с разработчиком бота 🤖.
 '''
 
