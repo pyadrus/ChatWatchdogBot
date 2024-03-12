@@ -7,9 +7,11 @@ from aiogram.types import ParseMode
 
 from system.dispatcher import dp, bot, AddAndDelBadWords
 from system.dispatcher import time_del
-from system.read_sqlite import reading_from_the_database_of_forbidden_check_word, reading_data_from_the_database, \
-    reading_bad_words_from_the_database, reading_from_the_database_of_forbidden_words, \
-    reading_data_from_the_database_check
+from system.read_sqlite import reading_bad_words_from_the_database
+from system.read_sqlite import reading_data_from_the_database
+from system.read_sqlite import reading_data_from_the_database_check
+from system.read_sqlite import reading_from_the_database_of_forbidden_check_word
+from system.read_sqlite import reading_from_the_database_of_forbidden_words
 from system.sqlite import delete_bad_word, recording_actions_check_word_in_the_database
 from system.sqlite import recording_actions_in_the_database
 from system.sqlite import writing_bad_words_to_the_database
